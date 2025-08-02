@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이미지 색상-감정 분석기</title>
+    <link rel="stylesheet" href="/src/index.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- 헤더 -->
+      <header class="shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center py-6">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">
+                이미지 색상-감정 분석기
+              </h1>
+              <p class="text-gray-600 mt-1">
+                이미지의 색상을 분석하고 감정 벡터를 추출해보세요
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-sm text-gray-500">
+                분석된 이미지: <span id="analyzed-count">0</span>개
+              </div>
+              <div class="text-sm text-gray-500">
+                총 이미지: <span id="total-count">0</span>개
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- 메인 콘텐츠 -->
+      <main class="max-w-7xl mx-auto py-8">
+        <div class="space-y-8">
+          <!-- 이미지 업로드 섹션 -->
+          <div class="w-full max-w-4xl mx-auto p-6">
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 mb-4">이미지 업로드</h2>
+              <p class="text-gray-600 mb-4">
+                여러 장의 이미지를 업로드하여 색상과 감정 벡터를 분석해보세요.
+              </p>
+            </div>
+
+            <!-- 드래그 앤 드롭 영역 -->
+            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-colors hover:border-gray-400">
+              <div class="space-y-4">
+                <div class="text-6xl text-gray-400">📸</div>
+                <div>
+                  <p class="text-lg font-medium text-gray-700 mb-2">
+                    이미지를 여기에 드래그하거나 클릭하여 선택하세요
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    JPG, PNG, GIF 파일을 지원합니다
+                  </p>
+                </div>
+                <button id="file-select-btn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  파일 선택
+                </button>
+              </div>
+              <input id="file-input" type="file" multiple accept="image/*" class="hidden">
+            </div>
+
+            <!-- 업로드된 파일 목록 -->
+            <div id="file-list" class="mt-6 space-y-2"></div>
+          </div>
+          
+          <!-- 이미지 갤러리 및 분석 결과 -->
+          <div id="image-gallery" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-semibold text-gray-800">이미지 갤러리</h3>
+              <button id="download-csv-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                📊 분석 결과 다운로드 (CSV)
+              </button>
+            </div>
+            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            
+            <!-- 분석 페이지로 이동 버튼 -->
+            <div id="analysis-button-container" class="mt-8 text-center hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="go-to-analysis-btn" class="px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-3">
+                  <span class="text-2xl">📊</span>
+                  <span class="text-lg font-semibold">분석 페이지로 이동</span>
+                  <span class="text-xl">→</span>
+                </button>
+                <button id="go-to-graph-btn" class="px-6 py-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-3">
+                  <span class="text-2xl">🕸️</span>
+                  <span class="text-lg font-semibold">네트워크 시각화</span>
+                  <span class="text-xl">→</span>
+                </button>
+              </div>
+              <p class="text-gray-600 mt-3 text-sm">분석 결과와 네트워크 그래프를 확인해보세요</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 푸터 -->
+      <footer class="border-t mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div class="text-center text-gray-500 text-sm">
+            <p>이미지 색상-감정 분석기 v1.0</p>
+            <p class="mt-1">
+              색상 분석과 감정 벡터 추출을 위한 웹 애플리케이션
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- 상세 분석 모달 -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-2xl font-bold text-gray-900">상세 분석 결과</h3>
+              <button onclick="closeDetailModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div id="detail-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이미지 색상-감정 분석 결과</title>
+    <link rel="stylesheet" href="/src/index.css">
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <!-- 헤더 -->
+    <header class="bg-gradient-to-r from-gray-800 to-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold">🎨 이미지 색상-감정 분석기</h1>
+                    <span class="text-blue-200 text-sm">분석 결과</span>
+                </div>
+                <button id="back-to-main" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                    <span>←</span>
+                    <span>메인으로 돌아가기</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- 분석 통계 -->
+        <div class="mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">총 이미지</p>
+                            <p class="text-3xl font-bold text-gray-800" id="total-images">0</p>
+                        </div>
+                        <div class="text-blue-500 text-3xl">📸</div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">분석 완료</p>
+                            <p class="text-3xl font-bold text-gray-800" id="analyzed-images">0</p>
+                        </div>
+                        <div class="text-green-500 text-3xl">✅</div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">색상 종류</p>
+                            <p class="text-3xl font-bold text-gray-800" id="color-types">0</p>
+                        </div>
+                        <div class="text-purple-500 text-3xl">🎨</div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-pink-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm">감정 종류</p>
+                            <p class="text-3xl font-bold text-gray-800" id="emotion-types">0</p>
+                        </div>
+                        <div class="text-pink-500 text-3xl">😊</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                 <!-- 색상 행렬 -->
+         <div class="mb-8">
+             <div class="bg-white rounded-xl shadow-lg p-6">
+                 <h2 class="text-2xl font-bold text-gray-800 mb-6">🎨 색상 분석 행렬</h2>
+                 <div class="analysis-table-container">
+                     <div class="min-w-full">
+                         <table id="color-matrix" class="w-full border-collapse border border-gray-300">
+                             <thead>
+                                 <tr class="bg-gray-100">
+                                     <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10">이미지 이름</th>
+                                     <!-- 색상 열 헤더는 동적으로 생성됩니다 -->
+                                 </tr>
+                             </thead>
+                             <tbody id="color-matrix-body">
+                                 <!-- 색상 행렬 데이터는 동적으로 생성됩니다 -->
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+ 
+         <!-- 감정 행렬 -->
+         <div class="mb-8">
+             <div class="bg-white rounded-xl shadow-lg p-6">
+                 <h2 class="text-2xl font-bold text-gray-800 mb-6">😊 감정 분석 행렬</h2>
+                 <div class="analysis-table-container">
+                     <div class="min-w-full">
+                         <table id="emotion-matrix" class="w-full border-collapse border border-gray-300">
+                             <thead>
+                                 <tr class="bg-gray-100">
+                                     <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-100 z-10">이미지 이름</th>
+                                     <!-- 감정 열 헤더는 동적으로 생성됩니다 -->
+                                 </tr>
+                             </thead>
+                             <tbody id="emotion-matrix-body">
+                                 <!-- 감정 행렬 데이터는 동적으로 생성됩니다 -->
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+
+        <!-- CSV 다운로드 버튼 -->
+        <div class="text-center">
+            <button id="download-analysis-csv" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2 mx-auto">
+                <span>📊</span>
+                <span>분석 결과 CSV 다운로드</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-gradient-to-r from-gray-800 to-blue-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-gray-300">이미지 색상-감정 분석기 - Vanilla JavaScript로 구현된 웹 애플리케이션</p>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/analysis.js"></script>
+</body>
+</html> 
