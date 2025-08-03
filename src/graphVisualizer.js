@@ -41,6 +41,7 @@ const algorithmDescriptions = {
 
 // DOM 요소들
 const backToMainBtn = document.getElementById('back-to-main');
+const goToAnalysisBtn = document.getElementById('go-to-analysis-btn');
 const similarityBtns = document.querySelectorAll('.similarity-btn');
 const selectedAlgorithmName = document.getElementById('selected-algorithm-name');
 const selectedAlgorithmDesc = document.getElementById('selected-algorithm-desc');
@@ -126,6 +127,9 @@ function loadAnalysisData() {
 function setupEventListeners() {
     backToMainBtn.addEventListener('click', () => {
         window.location.href = '/';
+    });
+    goToAnalysisBtn.addEventListener('click', () => {
+        window.location.href = '/analysis.html';
     });
     similarityBtns.forEach(btn => {
         btn.addEventListener('click', () => {

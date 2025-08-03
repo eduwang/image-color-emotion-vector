@@ -2,6 +2,7 @@ import './index.css';
 
 // DOM 요소들
 const backToMainBtn = document.getElementById('back-to-main');
+const goToGraphBtn = document.getElementById('go-to-graph-btn');
 const totalImages = document.getElementById('total-images');
 const analyzedImages = document.getElementById('analyzed-images');
 const colorTypes = document.getElementById('color-types');
@@ -15,6 +16,11 @@ const downloadAnalysisCsvBtn = document.getElementById('download-analysis-csv');
 // 메인으로 돌아가기 버튼
 backToMainBtn.addEventListener('click', () => {
     window.location.href = '/';
+});
+
+// 네트워크 시각화로 이동 버튼
+goToGraphBtn.addEventListener('click', () => {
+    window.location.href = '/graphVisualizer.html';
 });
 
 // 페이지 로드 시 분석 데이터 로드
