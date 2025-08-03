@@ -77,7 +77,7 @@ function updateStatistics(files, analysisData) {
 
 // 색상 행렬 생성
 function createColorMatrix(files, analysisData) {
-    // 모든 색상 수집
+    // 모든 색상 수집 (Gray 제외)
     const allColors = new Set();
     Object.values(analysisData).forEach(result => {
         if (result.colorVector && result.colorVector.dominantColors) {
@@ -99,13 +99,13 @@ function createColorMatrix(files, analysisData) {
     imageNameHeader.textContent = '이미지 이름';
     headerRow.appendChild(imageNameHeader);
     
-         // 색상 헤더들
-     colorArray.forEach(colorName => {
-         const colorHeader = document.createElement('th');
-         colorHeader.className = 'border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700 min-w-[80px] text-xs';
-         colorHeader.textContent = colorName;
-         headerRow.appendChild(colorHeader);
-     });
+    // 색상 헤더들
+    colorArray.forEach(colorName => {
+        const colorHeader = document.createElement('th');
+        colorHeader.className = 'border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700 min-w-[80px] text-xs';
+        colorHeader.textContent = colorName;
+        headerRow.appendChild(colorHeader);
+    });
     
     // 기존 헤더 제거하고 새 헤더 추가
     const thead = colorMatrix.querySelector('thead');
@@ -121,28 +121,28 @@ function createColorMatrix(files, analysisData) {
         const dataRow = document.createElement('tr');
         dataRow.className = 'hover:bg-gray-50';
         
-                 // 이미지 이름
-         const imageNameCell = document.createElement('td');
-         imageNameCell.className = 'border border-gray-300 px-4 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white z-10';
-         imageNameCell.textContent = file.name;
-         dataRow.appendChild(imageNameCell);
-         
-         // 색상 데이터
-         colorArray.forEach(colorName => {
-             const colorCell = document.createElement('td');
-             colorCell.className = 'border border-gray-300 px-3 py-2 text-center min-w-[80px]';
+        // 이미지 이름
+        const imageNameCell = document.createElement('td');
+        imageNameCell.className = 'border border-gray-300 px-4 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white z-10';
+        imageNameCell.textContent = file.name;
+        dataRow.appendChild(imageNameCell);
+        
+        // 색상 데이터
+        colorArray.forEach(colorName => {
+            const colorCell = document.createElement('td');
+            colorCell.className = 'border border-gray-300 px-3 py-2 text-center min-w-[80px]';
             
             const colorData = result.colorVector.dominantColors.find(c => c.name === colorName);
-                         if (colorData) {
-                 colorCell.innerHTML = `
-                     <div class="flex flex-col items-center justify-center space-y-1">
-                         <div class="w-3 h-3 rounded" style="background-color: ${colorData.hex}"></div>
-                         <span class="text-xs">${colorData.percentage}%</span>
-                     </div>
-                 `;
-             } else {
-                 colorCell.innerHTML = '<span class="text-xs text-gray-400">0%</span>';
-             }
+            if (colorData) {
+                colorCell.innerHTML = `
+                    <div class="flex flex-col items-center justify-center space-y-1">
+                        <div class="w-3 h-3 rounded border border-gray-200" style="background-color: ${colorData.hex}"></div>
+                        <span class="text-xs text-gray-700">${colorData.percentage}%</span>
+                    </div>
+                `;
+            } else {
+                colorCell.innerHTML = '<span class="text-xs text-gray-400">0%</span>';
+            }
             dataRow.appendChild(colorCell);
         });
         

@@ -9,14 +9,41 @@ function quantizeRGB(r, g, b, step = 16) {
   };
 }
 
+// 더 엄격한 Gray 색상 판정 함수 (임계값 낮춤)
+function isGrayColor(r, g, b, threshold = 8) {
+  const maxDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+  return maxDiff <= threshold;
+}
+
+// HSV 변환을 이용한 채도 계산 함수
+function rgbToHSV(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const delta = max - min;
+  let h = 0, s = 0, v = max;
+  if (delta !== 0) {
+    s = delta / max;
+    if (max === r) {
+      h = ((g - b) / delta) % 6;
+    } else if (max === g) {
+      h = (b - r) / delta + 2;
+    } else {
+      h = (r - g) / delta + 4;
+    }
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  return { h, s, v };
+}
+
 // 색상 그룹화 함수
 function groupSimilarColors(colors, step = 16) {
   const colorGroups = new Map();
-  
+
   colors.forEach(color => {
     const quantized = quantizeRGB(color.r, color.g, color.b, step);
     const key = `${quantized.r},${quantized.g},${quantized.b}`;
-    
+
     if (!colorGroups.has(key)) {
       colorGroups.set(key, {
         center: quantized,
@@ -24,12 +51,12 @@ function groupSimilarColors(colors, step = 16) {
         count: 0
       });
     }
-    
+
     const group = colorGroups.get(key);
     group.colors.push(color);
     group.count += color.count;
   });
-  
+
   return Array.from(colorGroups.values());
 }
 
@@ -39,68 +66,76 @@ export async function extractColorsFromImage(imageFile) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    
+
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-      
+
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const pixels = imageData.data;
-      
-      // 색상 빈도 분석 (더 세밀한 색상 구분)
+
+      // 색상 빈도 분석 (Gray 색상 완전 제외)
       const colorMap = new Map();
-      const sampleSize = Math.min(2000, pixels.length / 4); // 샘플링 크기 증가
-      const step = Math.max(1, pixels.length / 4 / sampleSize);
-      
+      const sampleSize = Math.min(2000, pixels.length / 4);
+      const step = Math.max(1, Math.floor(pixels.length / 4 / sampleSize));
+
       for (let i = 0; i < pixels.length; i += step * 4) {
         const r = pixels[i];
         const g = pixels[i + 1];
         const b = pixels[i + 2];
-        
+
         // 투명도가 높은 픽셀은 제외
         if (pixels[i + 3] < 128) continue;
-        
+
         // 너무 어둡거나 밝은 색상 제외 (노이즈 제거)
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        if (brightness < 20 || brightness > 240) continue;
-        
+        if (brightness < 10 || brightness > 245) continue; // 완화
+
+        // Gray 색상 완전 제외 (더 엄격한 기준)
+        if (isGrayColor(r, g, b, 8)) continue; // threshold 8
+
+        // 채도는 HSV 기준 사용, 임계값 완화
+        const { s } = rgbToHSV(r, g, b);
+        if (s < 0.04) continue; // 0.04 미만 무채색(파스텔)만 제거, 더 낮게
+
         const colorKey = `${r},${g},${b}`;
         colorMap.set(colorKey, (colorMap.get(colorKey) || 0) + 1);
       }
-      
+
       // 색상 데이터를 배열로 변환
       const colorArray = Array.from(colorMap.entries()).map(([colorKey, count]) => {
         const [r, g, b] = colorKey.split(',').map(Number);
-        return { r, g, b, count };
+        return { r, g, b, count, isGray: false };
       });
-      
+
       // 색상 그룹화 적용 (16단위로 반올림)
       const colorGroups = groupSimilarColors(colorArray, 16);
-      
-      // 그룹을 크기순으로 정렬하고 상위 5개 선택
+
+      // 상위 5개 색상 선택 (Gray 제외)
       const sortedGroups = colorGroups
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
-      
+
       // 결과 포맷팅
       const sortedColors = sortedGroups.map((group, index) => {
         const { r, g, b } = group.center;
         const colorName = rgbToColorName(r, g, b);
         const percentage = (group.count / sampleSize) * 100;
-        
+
         return {
           rgb: { r, g, b },
           hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`,
           name: colorName,
           percentage: percentage.toFixed(1),
-          clusterSize: group.colors.length // 그룹에 포함된 색상 개수
+          clusterSize: group.colors.length,
+          isGray: false // 모든 색상이 비-Gray
         };
       });
-      
+
       resolve(sortedColors);
     };
-    
+
     img.src = URL.createObjectURL(imageFile);
   });
 }
@@ -113,33 +148,33 @@ export function createColorVector(colors) {
     colorDistribution: {},
     totalIntensity: 0
   };
-  
+
   let totalWeight = 0;
-  
+
   colors.forEach(color => {
     const weight = parseFloat(color.percentage);
     totalWeight += weight;
-    
+
     // 평균 RGB 계산
     vector.averageRGB.r += color.rgb.r * weight;
     vector.averageRGB.g += color.rgb.g * weight;
     vector.averageRGB.b += color.rgb.b * weight;
-    
+
     // 색상 분포
     vector.colorDistribution[color.name] = (vector.colorDistribution[color.name] || 0) + weight;
   });
-  
+
   // 정규화
   if (totalWeight > 0) {
     vector.averageRGB.r = Math.round(vector.averageRGB.r / totalWeight);
     vector.averageRGB.g = Math.round(vector.averageRGB.g / totalWeight);
     vector.averageRGB.b = Math.round(vector.averageRGB.b / totalWeight);
   }
-  
+
   // 전체 강도 계산 (밝기 기반)
   const brightness = (vector.averageRGB.r * 299 + vector.averageRGB.g * 587 + vector.averageRGB.b * 114) / 1000;
   vector.totalIntensity = brightness / 255;
-  
+
   return vector;
 }
 
@@ -147,13 +182,13 @@ export function createColorVector(colors) {
 export function calculateColorSimilarity(color1, color2) {
   const r1 = color1.rgb.r, g1 = color1.rgb.g, b1 = color1.rgb.b;
   const r2 = color2.rgb.r, g2 = color2.rgb.g, b2 = color2.rgb.b;
-  
+
   const distance = Math.sqrt(
-    Math.pow(r1 - r2, 2) + 
-    Math.pow(g1 - g2, 2) + 
+    Math.pow(r1 - r2, 2) +
+    Math.pow(g1 - g2, 2) +
     Math.pow(b1 - b2, 2)
   );
-  
+
   // 최대 거리 (255^2 * 3)^0.5 = 441.67
   return 1 - (distance / 441.67);
-} 
+}

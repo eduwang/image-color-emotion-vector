@@ -180,7 +180,7 @@ function renderAnalysisResult(result) {
         <div class="flex space-x-2">
           ${colorVector.dominantColors.slice(0, 3).map(color => `
             <div class="flex items-center space-x-1">
-              <div class="w-4 h-4 rounded" style="background-color: ${color.hex}"></div>
+              <div class="w-4 h-4 rounded border border-gray-200" style="background-color: ${color.hex}"></div>
               <span class="text-xs text-gray-600">${color.name}</span>
             </div>
           `).join('')}
@@ -312,8 +312,8 @@ function renderDetailedAnalysis(file, result) {
           <h5 class="font-medium text-gray-700 mb-3">주요 색상 (상위 5개)</h5>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             ${colorVector.dominantColors.map((color, index) => `
-              <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded">
-                <div class="w-8 h-8 rounded" style="background-color: ${color.hex}"></div>
+              <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded border-l-4 border-blue-500">
+                <div class="w-8 h-8 rounded border border-gray-200" style="background-color: ${color.hex}"></div>
                 <div class="flex-1">
                   <p class="font-medium text-gray-900">${color.name}</p>
                   <p class="text-sm text-gray-500">${color.percentage}%</p>
